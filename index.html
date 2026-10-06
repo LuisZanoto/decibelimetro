@@ -96,7 +96,7 @@
       font-size: 11px;
       font-variant-numeric: tabular-nums;
     }
-    .gauge { display: block; width: min(100%, 360px); margin: 9px auto -1px; overflow: visible; }
+    .gauge { display: block; width: min(100%, 252px); margin: 9px auto -1px; overflow: visible; }
     .gauge .track { fill: none; stroke: #29394b; stroke-width: 11; stroke-linecap: round; }
     .gauge .arc { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; opacity: .9; }
     .gauge .tick { stroke: #9aabba; stroke-width: 1.5; }
@@ -168,7 +168,7 @@
       header { margin-bottom: 21px; }
       .meters { grid-template-columns: 1fr; gap: 12px; }
       .meter-card { padding: 16px 17px 14px; }
-      .gauge { width: min(100%, 320px); margin-top: 3px; }
+      .gauge { width: min(100%, 224px); margin-top: 3px; }
       .readout { margin-top: -4px; }
       .controls { grid-template-columns: 1fr; gap: 12px; margin-top: 12px; }
       .control-card { padding: 16px 17px; }
@@ -198,6 +198,35 @@
     </header>
 
     <p class="intro">Acompanhe o nível do som ambiente com ponderação de frequência A e C, em tempo real.</p>
+
+    <section class="controls" aria-label="Controles do medidor">
+      <div class="control-card">
+        <h2 class="control-title">Microfone</h2>
+        <p class="control-help">Permita o acesso ao microfone para iniciar a medição.</p>
+        <div class="actions">
+          <button class="primary" id="toggleButton" type="button">Iniciar medição</button>
+          <button class="secondary" id="resetButton" type="button">Zerar máximos</button>
+        </div>
+        <p class="error" id="error" role="alert"></p>
+      </div>
+      <div class="control-card">
+        <h2 class="control-title">Ajuste de calibração</h2>
+        <p class="control-help">Ajuste a leitura usando um sonômetro de referência. O valor padrão é apenas uma estimativa.</p>
+        <div class="calibration-row">
+          <input id="calibration" type="range" min="80" max="140" step="1" value="120" aria-label="Ajuste de calibração em decibéis">
+          <output class="calibration-value" id="calibrationValue">+120 dB</output>
+        </div>
+        <div class="smoothing-row">
+          <label class="smoothing-label" for="smoothing">Tempo da média</label>
+          <select id="smoothing" aria-label="Tempo da média da leitura">
+            <option value="250">250 ms · rápida</option>
+            <option value="500" selected>500 ms · equilibrada</option>
+            <option value="1000">1 s · estável</option>
+          </select>
+        </div>
+        <p class="smoothing-help">Uma média maior reduz oscilações, mas responde mais devagar.</p>
+      </div>
+    </section>
 
     <section class="meters" aria-label="Medidores de nível sonoro">
       <article class="meter-card" style="--accent: var(--cyan)">
@@ -231,35 +260,6 @@
         <div class="readout"><span class="value" id="valueC">—</span><span class="unit">dB(C)</span></div>
         <p class="meter-caption">Mantém mais graves e mede faixa ampla</p>
       </article>
-    </section>
-
-    <section class="controls" aria-label="Controles do medidor">
-      <div class="control-card">
-        <h2 class="control-title">Microfone</h2>
-        <p class="control-help">Permita o acesso ao microfone para iniciar a medição.</p>
-        <div class="actions">
-          <button class="primary" id="toggleButton" type="button">Iniciar medição</button>
-          <button class="secondary" id="resetButton" type="button">Zerar máximos</button>
-        </div>
-        <p class="error" id="error" role="alert"></p>
-      </div>
-      <div class="control-card">
-        <h2 class="control-title">Ajuste de calibração</h2>
-        <p class="control-help">Ajuste a leitura usando um sonômetro de referência. O valor padrão é apenas uma estimativa.</p>
-        <div class="calibration-row">
-          <input id="calibration" type="range" min="80" max="140" step="1" value="120" aria-label="Ajuste de calibração em decibéis">
-          <output class="calibration-value" id="calibrationValue">+120 dB</output>
-        </div>
-        <div class="smoothing-row">
-          <label class="smoothing-label" for="smoothing">Tempo da média</label>
-          <select id="smoothing" aria-label="Tempo da média da leitura">
-            <option value="250">250 ms · rápida</option>
-            <option value="500" selected>500 ms · equilibrada</option>
-            <option value="1000">1 s · estável</option>
-          </select>
-        </div>
-        <p class="smoothing-help">Uma média maior reduz oscilações, mas responde mais devagar.</p>
-      </div>
     </section>
 
     <aside class="notice">
