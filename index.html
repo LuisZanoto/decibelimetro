@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a1019">
+  <title>Decibelímetro</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0a1019;
+      --panel: #111b27;
+      --panel-light: #162332;
+      --line: #263647;
+      --text: #edf4fb;
+      --muted: #8da0b4;
+      --cyan: #55d6d0;
+      --lime: #c2ee79;
+      --orange: #ffb454;
+      --red: #ff6b70;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      padding: 28px 20px 32px;
+      background:
+        radial-gradient(ellipse at 50% -20%, rgba(49, 93, 116, .24), transparent 55%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input { font: inherit; }
+    .app { width: min(100%, 1020px); margin: 0 auto; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+    .brand { display: flex; align-items: center; gap: 13px; }
+    .brand-mark {
+      display: grid;
+      width: 44px;
+      height: 44px;
+      place-items: center;
+      border: 1px solid rgba(85, 214, 208, .35);
+      border-radius: 14px;
+      background: rgba(85, 214, 208, .09);
+      color: var(--cyan);
+    }
+    .brand-mark svg { width: 24px; height: 24px; }
+    h1 { margin: 0; font-size: 19px; letter-spacing: -.03em; }
+    .eyebrow { margin: 3px 0 0; color: var(--muted); font-size: 12px; }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #647589; }
+    .status.live { border-color: rgba(85, 214, 208, .3); color: var(--cyan); }
+    .status.live .status-dot { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+
+    .intro { margin: 0 0 18px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .meters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .meter-card, .control-card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: linear-gradient(155deg, rgba(22, 35, 50, .95), rgba(15, 24, 35, .97));
+      box-shadow: 0 14px 40px rgba(0, 0, 0, .15);
+    }
+    .meter-card { padding: 20px 20px 17px; overflow: hidden; }
+    .meter-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .weight {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .weight::before { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); content: ""; }
+    .weight-name { margin: 4px 0 0; font-size: 16px; font-weight: 600; }
+    .peak {
+      padding: 6px 9px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      color: var(--muted);
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+    .gauge { display: block; width: min(100%, 360px); margin: 9px auto -1px; overflow: visible; }
+    .gauge .track { fill: none; stroke: #29394b; stroke-width: 11; stroke-linecap: round; }
+    .gauge .arc { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; opacity: .9; }
+    .gauge .tick { stroke: #9aabba; stroke-width: 1.5; }
+    .gauge .tick.major { stroke: #e6eef5; stroke-width: 2; }
+    .gauge .tick-label { fill: #91a3b4; font-size: 10px; text-anchor: middle; dominant-baseline: middle; }
+    .gauge .needle { stroke: var(--accent); stroke-width: 3; stroke-linecap: round; filter: drop-shadow(0 0 4px var(--accent)); }
+    .gauge .hub { fill: #eaf2f8; stroke: var(--accent); stroke-width: 3; }
+    .readout { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-top: -1px; }
+    .value { min-width: 3ch; color: var(--text); font-size: clamp(40px, 7vw, 54px); font-variant-numeric: tabular-nums; font-weight: 650; letter-spacing: -.065em; text-align: right; }
+    .unit { color: var(--muted); font-size: 15px; }
+    .meter-caption { margin: 0; color: var(--muted); font-size: 11px; text-align: center; }
+
+    .controls { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; margin-top: 16px; }
+    .control-card { padding: 18px 20px; }
+    .control-title { margin: 0 0 5px; font-size: 13px; font-weight: 650; }
+    .control-help { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
+    .calibration-row { display: flex; align-items: center; gap: 12px; margin-top: 15px; }
+    input[type="range"] { width: 100%; accent-color: var(--cyan); }
+    .calibration-value { min-width: 55px; color: var(--cyan); font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; }
+    .smoothing-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+    .smoothing-label { color: var(--muted); font-size: 11px; }
+    select {
+      min-height: 34px;
+      padding: 0 30px 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--panel-light);
+      color: var(--text);
+      font: inherit;
+      font-size: 11px;
+    }
+    .smoothing-help { margin-top: 7px; color: var(--muted); font-size: 10px; }
+    .actions { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
+    button {
+      min-height: 42px;
+      padding: 0 16px;
+      border: 1px solid transparent;
+      border-radius: 11px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      transition: transform .15s ease, background .15s ease, border-color .15s ease;
+    }
+    button:active { transform: scale(.98); }
+    button:disabled { cursor: wait; opacity: .65; }
+    .primary { background: var(--cyan); color: #071719; }
+    .primary:hover { background: #7ce5df; }
+    .secondary { border-color: var(--line); background: transparent; color: var(--text); }
+    .secondary:hover { background: rgba(255, 255, 255, .04); }
+    .error { min-height: 17px; margin: 8px 0 0; color: var(--red); font-size: 11px; line-height: 1.45; }
+    .notice {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255, 180, 84, .18);
+      border-radius: 13px;
+      background: rgba(255, 180, 84, .055);
+      color: #d3b991;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .notice strong { color: var(--orange); }
+    .notice-icon { flex: 0 0 auto; color: var(--orange); }
+    footer { margin-top: 18px; color: #67798b; font-size: 10px; text-align: center; }
+
+    @media (max-width: 650px) {
+      body { padding: 20px 14px 26px; }
+      header { margin-bottom: 21px; }
+      .meters { grid-template-columns: 1fr; gap: 12px; }
+      .meter-card { padding: 16px 17px 14px; }
+      .gauge { width: min(100%, 320px); margin-top: 3px; }
+      .readout { margin-top: -4px; }
+      .controls { grid-template-columns: 1fr; gap: 12px; margin-top: 12px; }
+      .control-card { padding: 16px 17px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M4 14V10M8 18V6M12 21V3M16 17V7M20 14V10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Decibelímetro</h1>
+          <p class="eyebrow">Monitor de nível sonoro</p>
+        </div>
+      </div>
+      <div class="status" id="status" role="status" aria-live="polite">
+        <span class="status-dot"></span><span id="statusText">Microfone desligado</span>
+      </div>
+    </header>
+
+    <p class="intro">Acompanhe o nível do som ambiente com ponderação de frequência A e C, em tempo real.</p>
+
+    <section class="meters" aria-label="Medidores de nível sonoro">
+      <article class="meter-card" style="--accent: var(--cyan)">
+        <div class="meter-heading">
+          <div><div class="weight">Ponderação A</div><p class="weight-name">Ouvido humano</p></div>
+          <div class="peak">MÁX <span id="peakA">—</span></div>
+        </div>
+        <svg class="gauge" data-meter="a" viewBox="0 0 300 190" role="img" aria-label="Ponteiro do medidor com ponderação A">
+          <path class="track" d="M 36 153 A 114 114 0 0 1 264 153"/>
+          <path class="arc" d="M 36 153 A 114 114 0 0 1 264 153"/>
+          <g class="ticks"></g>
+          <line class="needle" x1="150" y1="153" x2="150" y2="58" transform="rotate(-90 150 153)"/>
+          <circle class="hub" cx="150" cy="153" r="7"/>
+        </svg>
+        <div class="readout"><span class="value" id="valueA">—</span><span class="unit">dB(A)</span></div>
+        <p class="meter-caption">Pondera frequências como a audição humana</p>
+      </article>
+
+      <article class="meter-card" style="--accent: var(--lime)">
+        <div class="meter-heading">
+          <div><div class="weight">Ponderação C</div><p class="weight-name">Faixa ampla</p></div>
+          <div class="peak">MÁX <span id="peakC">—</span></div>
+        </div>
+        <svg class="gauge" data-meter="c" viewBox="0 0 300 190" role="img" aria-label="Ponteiro do medidor com ponderação C">
+          <path class="track" d="M 36 153 A 114 114 0 0 1 264 153"/>
+          <path class="arc" d="M 36 153 A 114 114 0 0 1 264 153"/>
+          <g class="ticks"></g>
+          <line class="needle" x1="150" y1="153" x2="150" y2="58" transform="rotate(-90 150 153)"/>
+          <circle class="hub" cx="150" cy="153" r="7"/>
+        </svg>
+        <div class="readout"><span class="value" id="valueC">—</span><span class="unit">dB(C)</span></div>
+        <p class="meter-caption">Mantém mais graves e mede faixa ampla</p>
+      </article>
+    </section>
+
+    <section class="controls" aria-label="Controles do medidor">
+      <div class="control-card">
+        <h2 class="control-title">Microfone</h2>
+        <p class="control-help">Permita o acesso ao microfone para iniciar a medição.</p>
+        <div class="actions">
+          <button class="primary" id="toggleButton" type="button">Iniciar medição</button>
+          <button class="secondary" id="resetButton" type="button">Zerar máximos</button>
+        </div>
+        <p class="error" id="error" role="alert"></p>
+      </div>
+      <div class="control-card">
+        <h2 class="control-title">Ajuste de calibração</h2>
+        <p class="control-help">Ajuste a leitura usando um sonômetro de referência. O valor padrão é apenas uma estimativa.</p>
+        <div class="calibration-row">
+          <input id="calibration" type="range" min="80" max="140" step="1" value="120" aria-label="Ajuste de calibração em decibéis">
+          <output class="calibration-value" id="calibrationValue">+120 dB</output>
+        </div>
+        <div class="smoothing-row">
+          <label class="smoothing-label" for="smoothing">Tempo da média</label>
+          <select id="smoothing" aria-label="Tempo da média da leitura">
+            <option value="250">250 ms · rápida</option>
+            <option value="500" selected>500 ms · equilibrada</option>
+            <option value="1000">1 s · estável</option>
+          </select>
+        </div>
+        <p class="smoothing-help">Uma média maior reduz oscilações, mas responde mais devagar.</p>
+      </div>
+    </section>
+
+    <aside class="notice">
+      <span class="notice-icon" aria-hidden="true">ⓘ</span>
+      <span><strong>Leitura estimada, não certificada.</strong> Microfones de celular variam entre aparelhos e podem aplicar processamento automático. Para medições confiáveis, calibre com um equipamento de referência; este app não substitui um sonômetro profissional.</span>
+    </aside>
+    <footer>O áudio é processado no aparelho e não é gravado nem enviado.</footer>
+  </main>
+
+  <script>
+    (() => {
+      const status = document.getElementById("status");
+      const statusText = document.getElementById("statusText");
+      const toggleButton = document.getElementById("toggleButton");
+      const resetButton = document.getElementById("resetButton");
+      const calibration = document.getElementById("calibration");
+      const calibrationValue = document.getElementById("calibrationValue");
+      const smoothing = document.getElementById("smoothing");
+      const errorMessage = document.getElementById("error");
+      const values = {
+        a: { value: document.getElementById("valueA"), peak: document.getElementById("peakA") },
+        c: { value: document.getElementById("valueC"), peak: document.getElementById("peakC") }
+      };
+      const state = { stream: null, context: null, source: null, analysers: {}, buffers: {}, filters: {}, histories: { a: [], c: [] }, peaks: { a: -Infinity, c: -Infinity }, frame: 0, running: false };
+
+      function buildGauge(svg) {
+        const ticks = svg.querySelector(".ticks");
+        for (let db = 0; db <= 120; db += 10) {
+          const angle = (-90 + db / 120 * 180) * Math.PI / 180;
+          const major = db % 20 === 0;
+          const inner = major ? 91 : 97;
+          const outer = 108;
+          const x1 = 150 + Math.sin(angle) * inner;
+          const y1 = 153 - Math.cos(angle) * inner;
+          const x2 = 150 + Math.sin(angle) * outer;
+          const y2 = 153 - Math.cos(angle) * outer;
+          const tick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          tick.setAttribute("x1", x1); tick.setAttribute("y1", y1);
+          tick.setAttribute("x2", x2); tick.setAttribute("y2", y2);
+          tick.setAttribute("class", major ? "tick major" : "tick");
+          ticks.appendChild(tick);
+          if (major) {
+            const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            label.setAttribute("x", 150 + Math.sin(angle) * 78);
+            label.setAttribute("y", 153 - Math.cos(angle) * 78);
+            label.setAttribute("class", "tick-label");
+            label.textContent = db;
+            ticks.appendChild(label);
+          }
+        }
+      }
+
+      function convolve(left, right) {
+        const result = new Array(left.length + right.length - 1).fill(0);
+        left.forEach((value, i) => right.forEach((next, j) => { result[i + j] += value * next; }));
+        return result;
+      }
+
+      function responseMagnitude(coefficients, omega) {
+        let real = 0;
+        let imaginary = 0;
+        coefficients.forEach((coefficient, i) => {
+          real += coefficient * Math.cos(omega * i);
+          imaginary -= coefficient * Math.sin(omega * i);
+        });
+        return Math.hypot(real, imaginary);
+      }
+
+      function weightingCoefficients(kind, sampleRate) {
+        const frequencies = kind === "a"
+          ? [20.598997, 20.598997, 107.65265, 737.86223, 12194.217, 12194.217]
+          : [20.598997, 20.598997, 12194.217, 12194.217];
+        const zeroCount = kind === "a" ? 4 : 2;
+        let numerator = [1];
+        for (let i = 0; i < zeroCount; i++) numerator = convolve(numerator, [1, -1]);
+        for (let i = 0; i < frequencies.length - zeroCount; i++) numerator = convolve(numerator, [1, 1]);
+
+        let denominator = [1];
+        frequencies.forEach((frequency) => {
+          const pole = 2 * Math.PI * frequency;
+          denominator = convolve(denominator, [2 * sampleRate + pole, -2 * sampleRate + pole]);
+        });
+        const omega = 2 * Math.PI * 1000 / sampleRate;
+        const scale = responseMagnitude(denominator, omega) / responseMagnitude(numerator, omega);
+        const a0 = denominator[0];
+        return {
+          feedforward: numerator.map((value) => value * scale / a0),
+          feedback: denominator.map((value) => value / a0)
+        };
+      }
+
+      function setStatus(isRunning, text) {
+        status.classList.toggle("live", isRunning);
+        statusText.textContent = text;
+        toggleButton.textContent = isRunning ? "Parar medição" : "Iniciar medição";
+      }
+
+      function updateMeter(kind, level) {
+        const safeLevel = Math.max(0, Math.min(120, level));
+        values[kind].value.textContent = Number.isFinite(level) ? Math.round(level) : "—";
+        state.peaks[kind] = Math.max(state.peaks[kind], safeLevel);
+        values[kind].peak.textContent = Number.isFinite(state.peaks[kind]) ? `${Math.round(state.peaks[kind])} dB` : "—";
+        const needle = document.querySelector(`[data-meter="${kind}"] .needle`);
+        needle.setAttribute("transform", `rotate(${-90 + safeLevel / 120 * 180} 150 153)`);
+      }
+
+      function measure() {
+        if (!state.running) return;
+        const now = performance.now();
+        const windowMs = Number(smoothing.value);
+        const offset = Number(calibration.value);
+        for (const kind of ["a", "c"]) {
+          const analyser = state.analysers[kind];
+          const buffer = state.buffers[kind];
+          analyser.getFloatTimeDomainData(buffer);
+          let energy = 0;
+          for (let i = 0; i < buffer.length; i++) energy += buffer[i] * buffer[i];
+          const meanSquare = energy / buffer.length;
+          const history = state.histories[kind];
+          history.push({ time: now, energy: meanSquare });
+          while (history.length && history[0].time < now - windowMs) history.shift();
+          const averageEnergy = history.reduce((sum, sample) => sum + sample.energy, 0) / history.length;
+          const level = averageEnergy > 0 ? 10 * Math.log10(averageEnergy) + offset : 0;
+          updateMeter(kind, level);
+        }
+        state.frame = requestAnimationFrame(measure);
+      }
+
+      async function start() {
+        errorMessage.textContent = "";
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error("Este navegador não oferece acesso ao microfone. Abra a página em um navegador compatível e em uma conexão segura (HTTPS).");
+        }
+        state.stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+          video: false
+        });
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) throw new Error("Este navegador não oferece suporte à análise de áudio.");
+        state.context = new AudioContextClass();
+        await state.context.resume();
+        state.source = state.context.createMediaStreamSource(state.stream);
+
+        for (const kind of ["a", "c"]) {
+          const { feedforward, feedback } = weightingCoefficients(kind, state.context.sampleRate);
+          const filter = state.context.createIIRFilter(feedforward, feedback);
+          const analyser = state.context.createAnalyser();
+          analyser.fftSize = 2048;
+          analyser.smoothingTimeConstant = 0;
+          state.source.connect(filter);
+          filter.connect(analyser);
+          state.filters[kind] = filter;
+          state.analysers[kind] = analyser;
+          state.buffers[kind] = new Float32Array(analyser.fftSize);
+        }
+
+        state.running = true;
+        state.histories = { a: [], c: [] };
+        setStatus(true, "Medindo");
+        toggleButton.disabled = false;
+        state.frame = requestAnimationFrame(measure);
+      }
+
+      async function stop() {
+        state.running = false;
+        cancelAnimationFrame(state.frame);
+        if (state.source) state.source.disconnect();
+        Object.values(state.filters).forEach((filter) => filter.disconnect());
+        Object.values(state.analysers).forEach((analyser) => analyser.disconnect());
+        if (state.stream) state.stream.getTracks().forEach((track) => track.stop());
+        if (state.context && state.context.state !== "closed") await state.context.close();
+        state.stream = null;
+        state.context = null;
+        state.source = null;
+        state.filters = {};
+        state.analysers = {};
+        state.buffers = {};
+        state.histories = { a: [], c: [] };
+        setStatus(false, "Microfone desligado");
+      }
+
+      toggleButton.addEventListener("click", async () => {
+        toggleButton.disabled = true;
+        try {
+          if (state.running) await stop();
+          else await start();
+        } catch (error) {
+          await stop();
+          errorMessage.textContent = error.name === "NotAllowedError"
+            ? "Acesso ao microfone negado. Autorize o uso do microfone nas configurações do navegador."
+            : error.name === "NotFoundError"
+              ? "Nenhum microfone foi encontrado neste aparelho."
+              : error.message || "Não foi possível iniciar o microfone.";
+          setStatus(false, "Microfone desligado");
+        } finally {
+          toggleButton.disabled = false;
+        }
+      });
+
+      resetButton.addEventListener("click", () => {
+        state.peaks = { a: -Infinity, c: -Infinity };
+        values.a.peak.textContent = "—";
+        values.c.peak.textContent = "—";
+      });
+
+      calibration.addEventListener("input", () => {
+        const value = Number(calibration.value);
+        calibrationValue.textContent = `${value >= 0 ? "+" : ""}${value} dB`;
+      });
+
+      document.querySelectorAll(".gauge").forEach(buildGauge);
+      window.addEventListener("pagehide", () => {
+        if (state.stream) state.stream.getTracks().forEach((track) => track.stop());
+      });
+    })();
+  </script>
+</body>
+</html>
