@@ -66,7 +66,6 @@
     .status.live { border-color: rgba(85, 214, 208, .3); color: var(--cyan); }
     .status.live .status-dot { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
 
-    .intro { margin: 0 0 18px; color: var(--muted); font-size: 13px; line-height: 1.5; }
     .meters { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
     .meter-card, .control-card {
       border: 1px solid var(--line);
@@ -97,26 +96,28 @@
       font-variant-numeric: tabular-nums;
     }
     .gauge { display: block; width: min(100%, 252px); margin: 9px auto -1px; overflow: visible; }
-    .gauge .track { fill: none; stroke: #29394b; stroke-width: 11; stroke-linecap: round; }
+    .gauge .track { fill: none; stroke: #48242a; stroke-width: 11; stroke-linecap: round; }
     .gauge .arc { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; opacity: .9; }
-    .gauge .tick { stroke: #9aabba; stroke-width: 1.5; }
-    .gauge .tick.major { stroke: #e6eef5; stroke-width: 2; }
-    .gauge .tick-label { fill: #91a3b4; font-size: 10px; text-anchor: middle; dominant-baseline: middle; }
+    .gauge .tick { stroke: #c46b72; stroke-width: 1.5; }
+    .gauge .tick.major { stroke: #ffe3e5; stroke-width: 2; }
+    .gauge .tick-label { fill: #ffdadd; font-size: 10px; font-weight: 700; text-anchor: middle; dominant-baseline: middle; }
     .gauge .needle { stroke: var(--accent); stroke-width: 3; stroke-linecap: round; filter: drop-shadow(0 0 4px var(--accent)); }
-    .gauge .hub { fill: #eaf2f8; stroke: var(--accent); stroke-width: 3; }
+    .gauge .hub { fill: #fff1f1; stroke: var(--accent); stroke-width: 3; }
     .readout { display: flex; align-items: baseline; justify-content: center; gap: 8px; margin-top: -1px; }
     .value { min-width: 3ch; color: var(--text); font-size: clamp(40px, 7vw, 54px); font-variant-numeric: tabular-nums; font-weight: 650; letter-spacing: -.065em; text-align: right; }
     .unit { color: var(--muted); font-size: 15px; }
     .meter-caption { margin: 0; color: var(--muted); font-size: 11px; text-align: center; }
 
-    .controls { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; margin-top: 16px; }
+    .controls { margin-top: 16px; }
     .control-card { padding: 18px 20px; }
+    .controls-card { display: grid; grid-template-columns: .95fr 1.05fr; gap: 24px; padding: 10px 20px; }
+    .control-group + .control-group { border-left: 1px solid var(--line); padding-left: 24px; }
     .control-title { margin: 0 0 5px; font-size: 13px; font-weight: 650; }
     .control-help { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.5; }
-    .calibration-row { display: flex; align-items: center; gap: 12px; margin-top: 15px; }
+    .calibration-row { display: flex; align-items: center; gap: 12px; margin-top: 9px; }
     input[type="range"] { width: 100%; accent-color: var(--cyan); }
     .calibration-value { min-width: 55px; color: var(--cyan); font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; }
-    .smoothing-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 14px; }
+    .smoothing-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 9px; }
     .smoothing-label { color: var(--muted); font-size: 11px; }
     select {
       min-height: 34px;
@@ -128,8 +129,7 @@
       font: inherit;
       font-size: 11px;
     }
-    .smoothing-help { margin-top: 7px; color: var(--muted); font-size: 10px; }
-    .actions { display: flex; align-items: center; gap: 10px; margin-top: 15px; }
+    .actions { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
     button {
       min-height: 42px;
       padding: 0 16px;
@@ -170,8 +170,10 @@
       .meter-card { padding: 16px 17px 14px; }
       .gauge { width: min(100%, 224px); margin-top: 3px; }
       .readout { margin-top: -4px; }
-      .controls { grid-template-columns: 1fr; gap: 12px; margin-top: 12px; }
+      .controls { margin-top: 12px; }
       .control-card { padding: 16px 17px; }
+      .controls-card { grid-template-columns: 1fr; gap: 12px; padding: 10px 17px; }
+      .control-group + .control-group { border-top: 1px solid var(--line); border-left: 0; padding: 12px 0 0; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
@@ -197,65 +199,68 @@
       </div>
     </header>
 
-    <p class="intro">Acompanhe o nível do som ambiente com ponderação de frequência A e C, em tempo real.</p>
-
     <section class="controls" aria-label="Controles do medidor">
-      <div class="control-card">
-        <h2 class="control-title">Microfone</h2>
-        <p class="control-help">Permita o acesso ao microfone para iniciar a medição.</p>
-        <div class="actions">
-          <button class="primary" id="toggleButton" type="button">Iniciar medição</button>
-          <button class="secondary" id="resetButton" type="button">Zerar máximos</button>
+      <div class="control-card controls-card">
+        <div class="control-group">
+          <h2 class="control-title">Microfone</h2>
+          <p class="control-help">Permita o acesso ao microfone para iniciar a medição.</p>
+          <div class="actions">
+            <button class="primary" id="toggleButton" type="button">Iniciar medição</button>
+            <button class="secondary" id="resetButton" type="button">Zerar máximos</button>
+          </div>
+          <p class="error" id="error" role="alert"></p>
         </div>
-        <p class="error" id="error" role="alert"></p>
-      </div>
-      <div class="control-card">
-        <h2 class="control-title">Ajuste de calibração</h2>
-        <p class="control-help">Ajuste a leitura usando um sonômetro de referência. O valor padrão é apenas uma estimativa.</p>
-        <div class="calibration-row">
-          <input id="calibration" type="range" min="80" max="140" step="1" value="120" aria-label="Ajuste de calibração em decibéis">
-          <output class="calibration-value" id="calibrationValue">+120 dB</output>
+        <div class="control-group">
+          <h2 class="control-title">Ajuste de calibração</h2>
+          <p class="control-help">Ajuste a leitura usando um sonômetro de referência. O valor padrão é apenas uma estimativa.</p>
+          <div class="calibration-row">
+            <input id="calibration" type="range" min="80" max="140" step="1" value="120" aria-label="Ajuste de calibração em decibéis">
+            <output class="calibration-value" id="calibrationValue">+120 dB</output>
+          </div>
+          <div class="smoothing-row">
+            <label class="smoothing-label" for="smoothing">Tempo da média</label>
+            <select id="smoothing" aria-label="Tempo da média da leitura">
+              <option value="250">250 ms · rápida</option>
+              <option value="500" selected>500 ms · equilibrada</option>
+              <option value="1000">1 s · estável</option>
+            </select>
+          </div>
         </div>
-        <div class="smoothing-row">
-          <label class="smoothing-label" for="smoothing">Tempo da média</label>
-          <select id="smoothing" aria-label="Tempo da média da leitura">
-            <option value="250">250 ms · rápida</option>
-            <option value="500" selected>500 ms · equilibrada</option>
-            <option value="1000">1 s · estável</option>
-          </select>
-        </div>
-        <p class="smoothing-help">Uma média maior reduz oscilações, mas responde mais devagar.</p>
       </div>
     </section>
 
     <section class="meters" aria-label="Medidores de nível sonoro">
-      <article class="meter-card" style="--accent: var(--cyan)">
+      <article class="meter-card" style="--accent: var(--red)">
         <div class="meter-heading">
           <div><div class="weight">Ponderação A</div><p class="weight-name">Ouvido humano</p></div>
           <div class="peak">MÁX <span id="peakA">—</span></div>
         </div>
         <svg class="gauge" data-meter="a" viewBox="0 0 300 190" role="img" aria-label="Ponteiro do medidor com ponderação A">
-          <path class="track" d="M 36 153 A 114 114 0 0 1 264 153"/>
-          <path class="arc" d="M 36 153 A 114 114 0 0 1 264 153"/>
-          <g class="ticks"></g>
-          <line class="needle" x1="150" y1="153" x2="150" y2="58" transform="rotate(-90 150 153)"/>
-          <circle class="hub" cx="150" cy="153" r="7"/>
+          <g transform="translate(150 153) scale(1.3) translate(-150 -153)">
+            <path class="track" d="M 36 153 A 114 114 0 0 1 264 153"/>
+            <path class="arc" d="M 36 153 A 114 114 0 0 1 264 153"/>
+            <g class="ticks"></g>
+            <line class="needle" x1="150" y1="153" x2="150" y2="58" transform="rotate(-90 150 153)"/>
+            <circle class="hub" cx="150" cy="153" r="7"/>
+          </g>
         </svg>
         <div class="readout"><span class="value" id="valueA">—</span><span class="unit">dB(A)</span></div>
         <p class="meter-caption">Pondera frequências como a audição humana</p>
       </article>
 
-      <article class="meter-card" style="--accent: var(--lime)">
+      <article class="meter-card" style="--accent: #ff3d4d">
         <div class="meter-heading">
           <div><div class="weight">Ponderação C</div><p class="weight-name">Faixa ampla</p></div>
           <div class="peak">MÁX <span id="peakC">—</span></div>
         </div>
         <svg class="gauge" data-meter="c" viewBox="0 0 300 190" role="img" aria-label="Ponteiro do medidor com ponderação C">
-          <path class="track" d="M 36 153 A 114 114 0 0 1 264 153"/>
-          <path class="arc" d="M 36 153 A 114 114 0 0 1 264 153"/>
-          <g class="ticks"></g>
-          <line class="needle" x1="150" y1="153" x2="150" y2="58" transform="rotate(-90 150 153)"/>
-          <circle class="hub" cx="150" cy="153" r="7"/>
+          <g transform="translate(150 153) scale(1.3) translate(-150 -153)">
+            <path class="track" d="M 36 153 A 114 114 0 0 1 264 153"/>
+            <path class="arc" d="M 36 153 A 114 114 0 0 1 264 153"/>
+            <g class="ticks"></g>
+            <line class="needle" x1="150" y1="153" x2="150" y2="58" transform="rotate(-90 150 153)"/>
+            <circle class="hub" cx="150" cy="153" r="7"/>
+          </g>
         </svg>
         <div class="readout"><span class="value" id="valueC">—</span><span class="unit">dB(C)</span></div>
         <p class="meter-caption">Mantém mais graves e mede faixa ampla</p>
